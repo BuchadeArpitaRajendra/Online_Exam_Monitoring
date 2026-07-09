@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
     <title>Candidate Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <div class="container">
     <h2>Candidate Registration</h2>
     <form action="/register" method="POST">
         <label >Candidate ID:</label><br>
@@ -18,8 +20,23 @@
         <label >Password:</label><br>
         <input type="password" name="password"><br><br>
         
-        <button type="submit">Register</button>
+        <button type="submit" >Register</button>
 
     </form>
+    <p>
+        {% if errors %}
+        <ul class="error-list">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if message %}
+        <p class="success">{{ message }}</p>
+        {% endif %}
+    </p>
+    <a href="/login">Already Registered? Login</a>
+    </div>
 </body>
 </html>
