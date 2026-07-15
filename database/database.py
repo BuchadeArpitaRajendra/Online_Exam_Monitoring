@@ -25,8 +25,17 @@ CREATE TABLE IF NOT EXISTS session(
     FOREIGN KEY (candidate_id) REFERENCES candidate(candidate_id)
 )
 """
+event_log="""CREATE TABLE IF NOT EXISTS event_log (
+    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id TEXT,
+    event_type TEXT,
+    timestamp TEXT,
+    remarks TEXT
+)"""
+
 curser.execute(candidate_table)
 curser.execute(session_table)
+curser.execute(event_log)
 connection.commit()
 connection.close()
 print("Database and tables created successfully.")
