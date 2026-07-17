@@ -3,6 +3,7 @@ import os
 import sqlite3
 import time
 from datetime import datetime
+import csv
 
 # Load the Haar Cascade classifier
 face_cascade = cv2.CascadeClassifier(
@@ -16,7 +17,7 @@ if not os.path.exists(photo_folder):
     os.makedirs(photo_folder)
 
 # candidate_id=session["candidate_id"]
-candidate_id="C1003"
+candidate_id="C1099"
 # Open the webcam
 camera = cv2.VideoCapture(0)
 
@@ -47,10 +48,64 @@ def log_event(candidate_id, event_type, remarks):
     connection.commit()
     connection.close()
 
+
+def generate_event_log_csv(candidate_id, total_absence_duration):
+
+    connection = sqlite3.connect("exam.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT event_id,
+               candidate_id,
+               event_type,
+               timestamp,
+               remarks
+        FROM event_log
+        WHERE candidate_id = ?
+        ORDER BY event_id
+    """, (candidate_id,))
+
+    records = cursor.fetchall()
+
+    connection.close()
+
+    with open("event_log.csv", "w", newline="") as file:
+
+        writer = csv.writer(file)
+
+        writer.writerow([
+            "Event ID",
+            "Candidate ID",
+            "Event Type",
+            "Timestamp",
+            "Remarks"
+        ])
+
+        for row in records:
+            writer.writerow(row)
+
+        # Empty row
+        writer.writerow([])
+
+        # Summary
+        writer.writerow(["Summary"])
+        writer.writerow(["Candidate ID", candidate_id])
+        writer.writerow(["Total Face Absence Duration", f"{total_absence_duration} seconds"])
+        writer.writerow(["Total Face Missing Events", len(records) - 2])
+
+
+
+
 face_missing_logged = False
 absence_start_time = None
 absence_duration = 0
 total_absence_duration = 0
+
+log_event(
+    candidate_id,
+    "Exam Started",
+    "Exam session started"
+)
 
 
 while True:
@@ -61,6 +116,7 @@ while True:
     if not success:
         print("Failed to capture frame.")
         break
+    
     current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
     # Convert frame to grayscale
@@ -194,14 +250,29 @@ while True:
     # Press 'q' to quit
     if key == ord('q'):
 
-        # If the face is still absent when quitting
+        # If face is absent while quitting
         if absence_start_time is not None:
             total_absence_duration += int(time.time() - absence_start_time)
 
-        print("\n===== Monitoring Summary =====")
-        print("Total Face Absence Duration:", total_absence_duration, "seconds")
+        # Log exam end
+        log_event(
+            candidate_id,
+            "Exam Ended",
+            "Exam completed successfully"
+        )
+
+        # Generate CSV
+        generate_event_log_csv(
+            candidate_id,
+            total_absence_duration
+        )
+
+        print("\nCSV Generated Successfully!")
 
         break
+
+        # print("\n===== Monitoring Summary =====")
+        # print("Total Face Absence Duration:", total_absence_duration, "seconds")
     
 
 camera.release()

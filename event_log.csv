@@ -1,0 +1,10 @@
+Event ID,Candidate ID,Event Type,Timestamp,Remarks
+92,C1099,Exam Started,2026-07-17 21:36:02,Exam session started
+93,C1099,Face Not Detected,2026-07-17 21:36:06,Candidate face not visible
+94,C1099,Face Not Detected,2026-07-17 21:36:14,Candidate face not visible
+95,C1099,Exam Ended,2026-07-17 21:36:20,Exam completed successfully
+
+Summary
+Candidate ID,C1099
+Total Face Absence Duration,10 seconds
+Total Face Missing Events,2
