@@ -4,9 +4,13 @@ import re
 import cv2
 import os
 from datetime import datetime
+import subprocess
+import sys 
+
 
 app= Flask(__name__)
 app.secret_key = "exam_secret_key"
+face_process=None
 
 #home route
 @app.route("/")
@@ -149,9 +153,24 @@ def dashboard():
     
 @app.route("/start_exam")
 def start_exam():
+    # subprocess.Popen(["python","face_detection.py"])
+    # global face_process
+    BASE_DIR = os.getcwd()
+    STOP_FILE = os.path.join(BASE_DIR, "stop_exam.txt")
+
+    # Delete old stop file
+    if os.path.exists(STOP_FILE):
+        os.remove(STOP_FILE)
+        print("Old stop file removed")
 
     candidate_id = session["candidate_id"]
 
+    subprocess.Popen([
+        sys.executable,
+        "face_detection.py",
+        str(candidate_id)
+    ])
+    
     connection = sqlite3.connect("exam.db")
     cursor = connection.cursor()
 
@@ -204,6 +223,8 @@ def start_exam():
     <button>Back to Dashboard</button>
     </a>
     """
+   
+
 
 @app.route("/pause_exam")
 def pause_exam():
@@ -368,6 +389,15 @@ def resume_exam():
 
 @app.route("/end_exam")
 def end_exam():
+    with open("stop_exam.txt", "w") as f:
+        f.write("stop")
+
+    # global face_process
+
+    # if face_process is not None:
+    #     face_process.terminate()      # Stop face_detection.py
+    #     face_process.wait()           # Wait until it exits
+    #     face_process = None
 
     candidate_id=session["candidate_id"]
 
@@ -445,6 +475,37 @@ def end_exam():
     <button>Back to Dashboard</button>
     </a>
     """
+
+@app.route("/browser_event", methods=["POST"])
+def browser_event():
+
+    data = request.get_json()
+
+    event_type = data["event_type"]
+    remarks = data["remarks"]
+
+    candidate_id = session.get("candidate_id")     # Candidate logged in
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    connection = sqlite3.connect("exam.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO event_log
+        (candidate_id, event_type, timestamp, remarks)
+        VALUES (?, ?, ?, ?)
+    """, (
+        candidate_id,
+        event_type,
+        timestamp,
+        remarks
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return {"message": "Event Logged"}
 
 
 #run application

@@ -9,6 +9,7 @@
             font-family:Arial;
             background:#f2f2f2;
             text-align:center;
+       
         }
 
         .box{
@@ -66,7 +67,30 @@
 <button>End Exam</button>
 </a>
 
-</div>
+<br>
 
+
+
+<h3>Browser Monitoring</h3>
+
+<p>
+    Browser Status:
+    <span id="browserStatus" style="color:green;">
+        Browser Active
+    </span>
+</p>
+
+<p>
+    Focus Loss Count:
+    <span id="focusCount">0</span>
+</p>
+
+<p>
+    Last Focus Loss Time:
+    <span id="lastFocusTime">None</span>
+</p>
+</div>
+<script src="{{ url_for('static', filename='js/browser_monitor.js') }}"></script>
+<!-- <script src="\static\js\browser_monitor.js"></script> -->
 </body>
 </html>

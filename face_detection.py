@@ -4,20 +4,29 @@ import sqlite3
 import time
 from datetime import datetime
 import csv
+from flask import session
+import sys
 
 # Load the Haar Cascade classifier
 face_cascade = cv2.CascadeClassifier(
     
-"haarcascade\haarcascade_frontalface_default.xml"
+"haarcascade/haarcascade_frontalface_default.xml"
 )
 
 photo_folder = "photos1"
+BASE_DIR = os.getcwd()
+STOP_FILE = os.path.join(BASE_DIR, "stop_exam.txt")
 
 if not os.path.exists(photo_folder):
     os.makedirs(photo_folder)
 
+
+
+
+candidate_id = sys.argv[1]
+
 # candidate_id=session["candidate_id"]
-candidate_id="C1099"
+
 # Open the webcam
 camera = cv2.VideoCapture(0)
 
@@ -109,7 +118,10 @@ log_event(
 
 
 while True:
-
+    if os.path.exists(STOP_FILE):
+        camera.release()
+        cv2.destroyAllWindows()
+        break
     # Capture frame
     success, frame = camera.read()
 
